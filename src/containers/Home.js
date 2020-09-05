@@ -53,6 +53,8 @@ const Home = ({ stocks, today, wallet }) => {
   const changes = [...wallet];
   const lastChange = {};
   let totalHistory = [];
+  let pesosHistory = [];
+  let relativeData = [];
   // let totalCosto = [];
 
   Object.keys(stocks).forEach((name) =>
@@ -74,10 +76,9 @@ const Home = ({ stocks, today, wallet }) => {
       }),
     })
   );
-  const relativeData = JSON.parse(JSON.stringify(data));
 
   if (Object.keys(stocks).length > 0) {
-    const pesosHistory = stocks[Object.keys(stocks)[0]].map(({ date }) => {
+    pesosHistory = stocks[Object.keys(stocks)[0]].map(({ date }) => {
       const change = changes.find((ch) => {
         return ch.stock === "PESOS" && new Date(ch.date).getTime() === new Date(date).getTime();
       });
@@ -86,8 +87,20 @@ const Home = ({ stocks, today, wallet }) => {
     });
 
     data.push({ label: "PESOS", data: pesosHistory });
+  }
 
-    totalHistory = stocks[Object.keys(stocks)[0]].map(({ date }) => {
+  data.forEach((stock) => {
+    const actualPrice = totalWallet[stock.label].value;
+    stock.data.push({
+      primary: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()),
+      secondary: actualPrice,
+    });
+  });
+
+  relativeData = JSON.parse(JSON.stringify(data)).filter((st) => st.label !== "PESOS");
+
+  if (Object.keys(stocks).length > 0) {
+    totalHistory = data[0].data.map(({ primary: date }) => {
       let sum = 0;
       data.forEach((stock) => {
         if (!neto && stock.label === "PESOS") return;
@@ -99,8 +112,8 @@ const Home = ({ stocks, today, wallet }) => {
       return { primary: new Date(date), secondary: sum };
     });
 
-    data.push({ label: "Total", data: totalHistory });
-    stocks[Object.keys(stocks)[0]].forEach(({ date }) => {
+    data.push({ label: "TOTAL", data: totalHistory });
+    data[0].data.map(({ primary: date }) => {
       const totalH = totalHistory.find((th) => new Date(th.primary).getTime() === new Date(date).getTime());
       const totalP = pesosHistory.find((ph) => new Date(ph.primary).getTime() === new Date(date).getTime());
       relativeData.forEach((stock) => {

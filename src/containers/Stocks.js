@@ -59,6 +59,28 @@ const Stocks = ({ stocks, today }) => {
         }),
       })
   );
+
+  data.forEach((stock) => {
+    const actualPrice = today.find((tday) => tday.stock === stock.label).price;
+    let initial = 1;
+    let cant = 1;
+    if (stock.label === "AAPL") {
+      initial = 4;
+      if (new Date(stock.date).getTime() < new Date("08/31/2020").getTime()) {
+        cant = 4;
+      }
+    }
+    if (stock.label === "TSLA") {
+      initial = 5;
+      if (new Date(stock.date).getTime() < new Date("08/31/2020").getTime()) {
+        cant = 5;
+      }
+    }
+    stock.data.push({
+      primary: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()),
+      secondary: relative ? (actualPrice / cant / (stocks[stock.label][0].close / initial)) * 100 : actualPrice / cant,
+    });
+  });
   return (
     <Container style={{ paddingTop: 20 }}>
       <Card variant="outlined">
